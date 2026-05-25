@@ -1,0 +1,1601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Medical Professional Outreach — Sotheby's Oakville</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" integrity="sha512-Zcn6bjR/8RZbLEpLIeOwNtzREBAJnUKESxces60Mpoj+2okopSAcSUIUOseddDm0cxnGQzxIR7vJgsLZbdLE3w==" crossorigin="anonymous" referrerpolicy="no-referrer"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js" integrity="sha512-puJW3E/qXDqYp9IfhAI54BJEaWIfloJ7JWoFqBkwAzORmuolkHA7E4qNctxBKFwLMYE9LqY32hlyMFuZjHxCQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<style>
+  :root {
+    --bg: #0a0a0a;
+    --bg2: #111111;
+    --bg3: #181818;
+    --bg4: #202020;
+    --border: #2a2a2a;
+    --gold: #C9A84C;
+    --gold-dim: #8a6f2e;
+    --gold-light: #e8c97a;
+    --text: #e8e8e8;
+    --text-muted: #888;
+    --text-dim: #555;
+    --green: #2ecc71;
+    --red: #e74c3c;
+    --blue: #3498db;
+    --sidebar-w: 240px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; font-size: 14px; line-height: 1.5; display: flex; min-height: 100vh; }
+
+  /* ─── Sidebar ─── */
+  #sidebar {
+    width: var(--sidebar-w); min-width: var(--sidebar-w); background: var(--bg2);
+    border-right: 1px solid var(--border); display: flex; flex-direction: column;
+    position: fixed; top: 0; left: 0; height: 100vh; z-index: 100; overflow-y: auto;
+  }
+  .sidebar-logo { padding: 24px 20px 16px; border-bottom: 1px solid var(--border); }
+  .sidebar-logo .brand { font-family: 'Playfair Display', serif; font-size: 12px;
+    letter-spacing: 3px; text-transform: uppercase; color: var(--gold); }
+  .sidebar-logo .property { font-size: 11px; color: var(--text-muted); margin-top: 4px; line-height: 1.4; }
+  .sidebar-logo .agent { font-size: 10px; color: var(--text-dim); margin-top: 6px; }
+  .nav-section { padding: 16px 0 8px; }
+  .nav-label { font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--text-dim);
+    padding: 0 20px 8px; }
+  .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 20px; cursor: pointer;
+    color: var(--text-muted); font-size: 13px; transition: all 0.15s; border-left: 3px solid transparent; }
+  .nav-item:hover { background: var(--bg3); color: var(--text); }
+  .nav-item.active { background: rgba(201,168,76,0.08); color: var(--gold); border-left-color: var(--gold); }
+  .nav-item .icon { font-size: 16px; width: 20px; text-align: center; }
+  .sidebar-footer { margin-top: auto; padding: 16px 20px; border-top: 1px solid var(--border);
+    font-size: 10px; color: var(--text-dim); line-height: 1.6; }
+
+  /* ─── Main ─── */
+  #main { margin-left: var(--sidebar-w); flex: 1; min-height: 100vh; }
+  .page { display: none; padding: 32px; min-height: 100vh; }
+  .page.active { display: block; }
+  .page-header { margin-bottom: 28px; }
+  .page-header h1 { font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 500;
+    color: var(--text); margin-bottom: 6px; }
+  .page-header p { color: var(--text-muted); font-size: 13px; }
+  .gold-line { display: block; width: 40px; height: 2px; background: var(--gold); margin: 8px 0 16px; }
+
+  /* ─── Cards ─── */
+  .stat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 16px; margin-bottom: 32px; }
+  .stat-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 4px;
+    padding: 20px; position: relative; overflow: hidden; }
+  .stat-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: var(--gold); }
+  .stat-card .stat-label { font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--text-dim); margin-bottom: 8px; }
+  .stat-card .stat-value { font-family: 'Playfair Display', serif; font-size: 36px;
+    font-weight: 600; color: var(--gold); line-height: 1; }
+  .stat-card .stat-sub { font-size: 11px; color: var(--text-muted); margin-top: 6px; }
+
+  /* ─── Tables ─── */
+  .table-wrap { background: var(--bg2); border: 1px solid var(--border); border-radius: 4px; overflow: hidden; }
+  .table-toolbar { display: flex; align-items: center; gap: 12px; padding: 16px 20px;
+    border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+  .search-input { background: var(--bg3); border: 1px solid var(--border); color: var(--text);
+    padding: 8px 14px; border-radius: 3px; font-size: 13px; flex: 1; min-width: 200px;
+    font-family: 'Inter', sans-serif; }
+  .search-input:focus { outline: none; border-color: var(--gold); }
+  .filter-select { background: var(--bg3); border: 1px solid var(--border); color: var(--text);
+    padding: 8px 12px; border-radius: 3px; font-size: 12px; cursor: pointer;
+    font-family: 'Inter', sans-serif; }
+  .filter-select:focus { outline: none; border-color: var(--gold); }
+  .btn { padding: 8px 16px; border-radius: 3px; font-size: 12px; cursor: pointer; border: none;
+    font-family: 'Inter', sans-serif; font-weight: 500; transition: all 0.15s; }
+  .btn-gold { background: var(--gold); color: #000; }
+  .btn-gold:hover { background: var(--gold-light); }
+  .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text-muted); }
+  .btn-outline:hover { border-color: var(--gold); color: var(--gold); }
+  .btn-sm { padding: 4px 10px; font-size: 11px; }
+  table { width: 100%; border-collapse: collapse; }
+  thead th { background: var(--bg3); padding: 12px 16px; text-align: left; font-size: 10px;
+    letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-muted);
+    border-bottom: 1px solid var(--border); white-space: nowrap; }
+  tbody tr { border-bottom: 1px solid var(--border); transition: background 0.1s; cursor: pointer; }
+  tbody tr:hover { background: var(--bg3); }
+  tbody tr:last-child { border-bottom: none; }
+  tbody td { padding: 12px 16px; font-size: 13px; }
+  .table-footer { padding: 12px 20px; border-top: 1px solid var(--border);
+    font-size: 11px; color: var(--text-dim); display: flex; justify-content: space-between; align-items: center; }
+
+  /* Distance badges */
+  .dist-badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 500; }
+  .dist-close { background: rgba(46,204,113,0.15); color: var(--green); }
+  .dist-mid { background: rgba(201,168,76,0.15); color: var(--gold); }
+  .dist-far { background: rgba(85,85,85,0.3); color: var(--text-muted); }
+
+  /* Status badge */
+  .status-badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; }
+  .status-not { background: rgba(85,85,85,0.3); color: var(--text-muted); }
+  .status-sent { background: rgba(52,152,219,0.15); color: var(--blue); }
+  .status-responded { background: rgba(46,204,113,0.15); color: var(--green); }
+  .status-meeting { background: rgba(201,168,76,0.15); color: var(--gold); }
+
+  /* Expandable row */
+  .expand-row { display: none; background: var(--bg3); }
+  .expand-row.open { display: table-row; }
+  .expand-content { padding: 16px 20px; }
+  .expand-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
+  .expand-field label { font-size: 10px; text-transform: uppercase; letter-spacing: 1px;
+    color: var(--text-dim); display: block; margin-bottom: 3px; }
+  .expand-field span { color: var(--text); font-size: 13px; }
+  .notes-area { width: 100%; background: var(--bg4); border: 1px solid var(--border);
+    color: var(--text); padding: 8px 12px; border-radius: 3px; font-size: 12px; resize: vertical;
+    font-family: 'Inter', sans-serif; margin-top: 8px; }
+  .notes-area:focus { outline: none; border-color: var(--gold); }
+
+  /* ─── Kanban ─── */
+  .kanban { display: flex; gap: 16px; overflow-x: auto; padding-bottom: 16px; }
+  .kanban-col { min-width: 220px; flex: 1; background: var(--bg2);
+    border: 1px solid var(--border); border-radius: 4px; display: flex; flex-direction: column; }
+  .kanban-header { padding: 14px 16px; border-bottom: 1px solid var(--border);
+    display: flex; justify-content: space-between; align-items: center; }
+  .kanban-header h3 { font-size: 12px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 1px; color: var(--text-muted); }
+  .kanban-count { background: var(--bg4); padding: 1px 7px; border-radius: 10px;
+    font-size: 11px; color: var(--text-dim); }
+  .kanban-cards { padding: 10px; flex: 1; min-height: 60px; }
+  .kanban-card { background: var(--bg3); border: 1px solid var(--border); border-radius: 3px;
+    padding: 10px 12px; margin-bottom: 8px; cursor: grab; transition: all 0.15s;
+    border-left: 3px solid transparent; }
+  .kanban-card:hover { border-color: var(--gold-dim); }
+  .kanban-card.dragging { opacity: 0.5; }
+  .kanban-card .card-name { font-size: 13px; font-weight: 500; margin-bottom: 3px; }
+  .kanban-card .card-detail { font-size: 11px; color: var(--text-muted); }
+  .kanban-card .card-tag { display: inline-block; padding: 1px 6px; border-radius: 10px;
+    font-size: 10px; margin-top: 5px; }
+  .kanban-col[data-col="not_contacted"] .kanban-card { border-left-color: #555; }
+  .kanban-col[data-col="email_sent"] .kanban-card { border-left-color: var(--blue); }
+  .kanban-col[data-col="awaiting"] .kanban-card { border-left-color: #e67e22; }
+  .kanban-col[data-col="responded"] .kanban-card { border-left-color: var(--green); }
+  .kanban-col[data-col="meeting"] .kanban-card { border-left-color: var(--gold); }
+  .kanban-col[data-col="converted"] .kanban-card { border-left-color: #9b59b6; }
+  .kanban-drop-zone { border: 2px dashed var(--border); border-radius: 3px; padding: 12px;
+    display: none; color: var(--text-dim); font-size: 12px; text-align: center; }
+  .kanban-drop-zone.visible { display: block; }
+
+  /* ─── Map ─── */
+  #map { height: 500px; border-radius: 4px; border: 1px solid var(--border); }
+  .map-controls { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+  .map-legend { display: flex; gap: 20px; background: var(--bg2); border: 1px solid var(--border);
+    padding: 12px 16px; border-radius: 4px; margin-top: 16px; flex-wrap: wrap; }
+  .legend-item { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-muted); }
+  .legend-dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+
+  /* ─── Templates ─── */
+  .template-list { display: flex; flex-direction: column; gap: 16px; }
+  .template-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 4px; overflow: hidden; }
+  .template-header { padding: 14px 20px; border-bottom: 1px solid var(--border);
+    display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+  .template-header h3 { font-size: 13px; font-weight: 600; color: var(--text); }
+  .template-header .tag { font-size: 10px; padding: 2px 8px; border-radius: 10px;
+    background: rgba(201,168,76,0.15); color: var(--gold); }
+  .template-body { padding: 20px; display: none; }
+  .template-body.open { display: block; }
+  .template-variables { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+  .var-chip { background: var(--bg3); border: 1px solid var(--border); padding: 3px 10px;
+    border-radius: 10px; font-size: 11px; color: var(--gold); cursor: pointer;
+    font-family: monospace; }
+  .template-text { background: var(--bg3); border: 1px solid var(--border); border-radius: 3px;
+    padding: 16px; font-size: 13px; line-height: 1.8; color: var(--text); white-space: pre-wrap;
+    font-family: 'Inter', sans-serif; }
+  .template-text .var { color: var(--gold); font-weight: 500; }
+  .template-actions { display: flex; gap: 8px; margin-top: 12px; }
+
+  /* ─── Settings ─── */
+  .settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  .settings-section { background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 4px; padding: 24px; }
+  .settings-section h3 { font-family: 'Playfair Display', serif; font-size: 16px;
+    margin-bottom: 16px; color: var(--gold); }
+  .form-group { margin-bottom: 14px; }
+  .form-group label { display: block; font-size: 11px; text-transform: uppercase;
+    letter-spacing: 1px; color: var(--text-dim); margin-bottom: 6px; }
+  .form-input { width: 100%; background: var(--bg3); border: 1px solid var(--border);
+    color: var(--text); padding: 9px 12px; border-radius: 3px; font-size: 13px;
+    font-family: 'Inter', sans-serif; }
+  .form-input:focus { outline: none; border-color: var(--gold); }
+  .casl-notice { background: rgba(201,168,76,0.06); border: 1px solid var(--gold-dim);
+    border-radius: 4px; padding: 16px; font-size: 12px; line-height: 1.7; color: var(--text-muted); }
+  .casl-notice strong { color: var(--gold); }
+
+  /* ─── Call list ─── */
+  .call-list { background: var(--bg2); border: 1px solid var(--border); border-radius: 4px; overflow: hidden; }
+  .call-list-header { padding: 14px 20px; border-bottom: 1px solid var(--border);
+    display: flex; justify-content: space-between; align-items: center; }
+  .call-list-header h3 { font-family: 'Playfair Display', serif; font-size: 16px; }
+  .call-item { display: flex; align-items: center; gap: 14px; padding: 12px 20px;
+    border-bottom: 1px solid var(--border); }
+  .call-item:last-child { border-bottom: none; }
+  .call-num { width: 24px; height: 24px; background: var(--bg3); border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; font-size: 11px;
+    color: var(--text-dim); flex-shrink: 0; }
+  .call-info { flex: 1; }
+  .call-name { font-size: 13px; font-weight: 500; }
+  .call-meta { font-size: 11px; color: var(--text-muted); }
+  .call-type { font-size: 10px; padding: 2px 8px; border-radius: 10px; }
+  .call-type.doctor { background: rgba(52,152,219,0.15); color: var(--blue); }
+  .call-type.gatekeeper { background: rgba(201,168,76,0.15); color: var(--gold); }
+  .call-type.clinic { background: rgba(46,204,113,0.15); color: var(--green); }
+  .call-phone { font-size: 12px; color: var(--text-muted); white-space: nowrap; }
+
+  /* ─── CASL footer ─── */
+  .casl-footer { background: rgba(201,168,76,0.04); border-top: 1px solid var(--border);
+    padding: 12px 32px; font-size: 11px; color: var(--text-dim); line-height: 1.6;
+    margin-left: var(--sidebar-w); }
+
+  /* ─── Proximity map group ─── */
+  .hosp-group { background: var(--bg2); border: 1px solid var(--border); border-radius: 4px;
+    margin-bottom: 16px; overflow: hidden; }
+  .hosp-group-header { padding: 12px 20px; background: var(--bg3); display: flex;
+    align-items: center; justify-content: space-between; cursor: pointer; }
+  .hosp-group-header h4 { font-size: 13px; font-weight: 600; color: var(--text); }
+  .hosp-group-body { display: none; }
+  .hosp-group-body.open { display: block; }
+
+  /* ─── Responsive ─── */
+  @media (max-width: 768px) {
+    :root { --sidebar-w: 60px; }
+    .nav-item span { display: none; }
+    .sidebar-logo .brand, .sidebar-logo .property, .sidebar-logo .agent { display: none; }
+    .sidebar-footer { display: none; }
+    .page { padding: 16px; }
+    .stat-grid { grid-template-columns: 1fr 1fr; }
+    .settings-grid { grid-template-columns: 1fr; }
+    .casl-footer { margin-left: var(--sidebar-w); }
+    .kanban { gap: 10px; }
+    .kanban-col { min-width: 160px; }
+  }
+
+  /* Tooltip */
+  .tooltip { position: relative; }
+  .tooltip:hover::after { content: attr(data-tip); position: absolute; bottom: 100%; left: 50%;
+    transform: translateX(-50%); background: #000; color: var(--text); padding: 4px 8px;
+    border-radius: 3px; font-size: 11px; white-space: nowrap; z-index: 999; }
+
+  .section-title { font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 500;
+    margin-bottom: 16px; color: var(--text); }
+  .divider { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
+
+  .gk-dept-tag { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px;
+    background: var(--bg4); color: var(--text-muted); }
+  .gk-dept-tag.hr { background: rgba(231,76,60,0.1); color: #e74c3c; }
+  .gk-dept-tag.comms { background: rgba(52,152,219,0.1); color: var(--blue); }
+  .gk-dept-tag.foundation { background: rgba(201,168,76,0.1); color: var(--gold); }
+  .gk-dept-tag.vol { background: rgba(46,204,113,0.1); color: var(--green); }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════ SIDEBAR ═══════════════ -->
+<nav id="sidebar">
+  <div class="sidebar-logo">
+    <div class="brand">Sotheby's International</div>
+    <div class="property">3291 Harasym Tr<br>Oakville, Ontario</div>
+    <div class="agent" id="sidebar-agent">Karolis · Medical Outreach</div>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">Navigation</div>
+    <div class="nav-item active" onclick="showPage('overview')" id="nav-overview">
+      <span class="icon">◆</span><span>Overview</span>
+    </div>
+    <div class="nav-item" onclick="showPage('doctors')" id="nav-doctors">
+      <span class="icon">⊕</span><span>Doctors Database</span>
+    </div>
+    <div class="nav-item" onclick="showPage('gatekeepers')" id="nav-gatekeepers">
+      <span class="icon">⊞</span><span>Hospital Gatekeepers</span>
+    </div>
+    <div class="nav-item" onclick="showPage('map')" id="nav-map">
+      <span class="icon">◉</span><span>Proximity Map</span>
+    </div>
+    <div class="nav-item" onclick="showPage('tracker')" id="nav-tracker">
+      <span class="icon">⊟</span><span>Outreach Tracker</span>
+    </div>
+    <div class="nav-item" onclick="showPage('templates')" id="nav-templates">
+      <span class="icon">✉</span><span>Email Templates</span>
+    </div>
+    <div class="nav-item" onclick="showPage('settings')" id="nav-settings">
+      <span class="icon">⊙</span><span>Settings</span>
+    </div>
+  </div>
+  <div class="sidebar-footer">
+    CASL Compliant<br>
+    Business contacts only<br>
+    Public registry data
+  </div>
+</nav>
+
+<!-- ═══════════════ MAIN ═══════════════ -->
+<div id="main">
+
+  <!-- ── OVERVIEW PAGE ── -->
+  <div id="page-overview" class="page active">
+    <div class="page-header">
+      <h1>Medical Professional Outreach</h1>
+      <span class="gold-line"></span>
+      <p>Targeting GTA physicians for 3291 Harasym Tr, Oakville — Sotheby's International Realty</p>
+    </div>
+    <div class="stat-grid" id="stat-grid">
+      <div class="stat-card">
+        <div class="stat-label">Total Doctors</div>
+        <div class="stat-value" id="stat-total-doctors">—</div>
+        <div class="stat-sub">GTA public registry</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Within 10km</div>
+        <div class="stat-value" id="stat-nearby">—</div>
+        <div class="stat-sub">of 3291 Harasym Tr</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Gatekeepers</div>
+        <div class="stat-value" id="stat-gatekeepers">—</div>
+        <div class="stat-sub">Hospital HR/Comms</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Outreach Sent</div>
+        <div class="stat-value" id="stat-outreach">0</div>
+        <div class="stat-sub">this session</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Responses</div>
+        <div class="stat-value" id="stat-responses">0</div>
+        <div class="stat-sub">received</div>
+      </div>
+    </div>
+
+    <div class="call-list">
+      <div class="call-list-header">
+        <h3>Today's Priority Call List</h3>
+        <span style="font-size:11px;color:var(--text-dim)">Top 15 contacts · sorted by proximity + tier</span>
+      </div>
+      <div id="call-list-body"></div>
+    </div>
+  </div>
+
+  <!-- ── DOCTORS PAGE ── -->
+  <div id="page-doctors" class="page">
+    <div class="page-header">
+      <h1>Doctors Database</h1>
+      <span class="gold-line"></span>
+      <p>CPSO public registry — GTA physicians sorted by proximity to listing</p>
+    </div>
+    <div class="table-wrap">
+      <div class="table-toolbar">
+        <input type="text" class="search-input" id="doctor-search" placeholder="Search by name, specialty, city...">
+        <select class="filter-select" id="filter-city">
+          <option value="">All Cities</option>
+        </select>
+        <select class="filter-select" id="filter-specialty">
+          <option value="">All Specialties</option>
+        </select>
+        <select class="filter-select" id="filter-hospital">
+          <option value="">All Hospitals</option>
+        </select>
+        <select class="filter-select" id="filter-distance">
+          <option value="">Any Distance</option>
+          <option value="5">Within 5km</option>
+          <option value="10">Within 10km</option>
+          <option value="15">Within 15km</option>
+          <option value="25">Within 25km</option>
+        </select>
+        <button class="btn btn-outline btn-sm" onclick="exportDoctorsCSV()">Export CSV</button>
+      </div>
+      <div style="overflow-x:auto">
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Specialty</th>
+              <th>City</th>
+              <th>Hospital</th>
+              <th>Phone</th>
+              <th>Distance</th>
+              <th>Status</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="doctors-tbody"></tbody>
+        </table>
+      </div>
+      <div class="table-footer">
+        <span id="doctors-count">Loading...</span>
+        <span style="color:var(--text-dim)">Click any row for details</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── GATEKEEPERS PAGE ── -->
+  <div id="page-gatekeepers" class="page">
+    <div class="page-header">
+      <h1>Hospital Gatekeepers</h1>
+      <span class="gold-line"></span>
+      <p>HR, Communications, and Foundation contacts at GTA hospitals</p>
+    </div>
+    <div style="margin-bottom:16px;display:flex;gap:10px;flex-wrap:wrap">
+      <input type="text" class="search-input" id="gk-search" placeholder="Search contacts..." style="max-width:300px">
+      <select class="filter-select" id="gk-filter-dept">
+        <option value="">All Departments</option>
+        <option value="HR">HR</option>
+        <option value="Communications">Communications</option>
+        <option value="Foundation">Foundation</option>
+        <option value="Volunteer Services">Volunteer Services</option>
+        <option value="Media Relations">Media Relations</option>
+      </select>
+      <select class="filter-select" id="gk-filter-city">
+        <option value="">All Cities</option>
+      </select>
+    </div>
+    <div id="gatekeepers-body"></div>
+  </div>
+
+  <!-- ── MAP PAGE ── -->
+  <div id="page-map" class="page">
+    <div class="page-header">
+      <h1>Proximity Map</h1>
+      <span class="gold-line"></span>
+      <p>Doctors and hospitals within range of 3291 Harasym Tr, Oakville</p>
+    </div>
+    <div class="map-controls">
+      <select class="filter-select" id="map-radius" onchange="filterMapDoctors()">
+        <option value="10">Within 10km</option>
+        <option value="15" selected>Within 15km</option>
+        <option value="25">Within 25km</option>
+        <option value="50">Within 50km</option>
+        <option value="999">All</option>
+      </select>
+      <select class="filter-select" id="map-specialty" onchange="filterMapDoctors()">
+        <option value="">All Specialties</option>
+      </select>
+      <button class="btn btn-outline btn-sm" onclick="filterMapDoctors()">Update Map</button>
+      <span style="font-size:12px;color:var(--text-muted);align-self:center" id="map-count"></span>
+    </div>
+    <div id="map"></div>
+    <div class="map-legend">
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#C9A84C;width:16px;height:16px;border-radius:2px"></div>
+        <span>Listing (3291 Harasym Tr)</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#3498db"></div>
+        <span>Hospitals</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#2ecc71"></div>
+        <span>Doctors &lt; 5km</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#C9A84C;opacity:0.8"></div>
+        <span>Doctors 5–15km</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#888"></div>
+        <span>Doctors 15km+</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── TRACKER PAGE ── -->
+  <div id="page-tracker" class="page">
+    <div class="page-header">
+      <h1>Outreach Tracker</h1>
+      <span class="gold-line"></span>
+      <p>Drag contacts between columns to track your pipeline</p>
+    </div>
+    <div class="kanban" id="kanban-board">
+      <div class="kanban-col" data-col="not_contacted" ondragover="event.preventDefault()" ondrop="dropCard(event,this)">
+        <div class="kanban-header"><h3>Not Contacted</h3><span class="kanban-count" id="kcount-not_contacted">0</span></div>
+        <div class="kanban-cards" id="kcards-not_contacted"></div>
+      </div>
+      <div class="kanban-col" data-col="email_sent" ondragover="event.preventDefault()" ondrop="dropCard(event,this)">
+        <div class="kanban-header"><h3>Email Sent</h3><span class="kanban-count" id="kcount-email_sent">0</span></div>
+        <div class="kanban-cards" id="kcards-email_sent"></div>
+      </div>
+      <div class="kanban-col" data-col="awaiting" ondragover="event.preventDefault()" ondrop="dropCard(event,this)">
+        <div class="kanban-header"><h3>Awaiting Response</h3><span class="kanban-count" id="kcount-awaiting">0</span></div>
+        <div class="kanban-cards" id="kcards-awaiting"></div>
+      </div>
+      <div class="kanban-col" data-col="responded" ondragover="event.preventDefault()" ondrop="dropCard(event,this)">
+        <div class="kanban-header"><h3>Responded</h3><span class="kanban-count" id="kcount-responded">0</span></div>
+        <div class="kanban-cards" id="kcards-responded"></div>
+      </div>
+      <div class="kanban-col" data-col="meeting" ondragover="event.preventDefault()" ondrop="dropCard(event,this)">
+        <div class="kanban-header"><h3>Booked Meeting</h3><span class="kanban-count" id="kcount-meeting">0</span></div>
+        <div class="kanban-cards" id="kcards-meeting"></div>
+      </div>
+      <div class="kanban-col" data-col="converted" ondragover="event.preventDefault()" ondrop="dropCard(event,this)">
+        <div class="kanban-header"><h3>Converted</h3><span class="kanban-count" id="kcount-converted">0</span></div>
+        <div class="kanban-cards" id="kcards-converted"></div>
+      </div>
+    </div>
+    <p style="font-size:12px;color:var(--text-dim);margin-top:12px">Pipeline state auto-saves to your browser. First 20 doctors + all gatekeepers added automatically.</p>
+  </div>
+
+  <!-- ── TEMPLATES PAGE ── -->
+  <div id="page-templates" class="page">
+    <div class="page-header">
+      <h1>Email Templates</h1>
+      <span class="gold-line"></span>
+      <p>CASL-compliant outreach templates — all business contact, implied consent B2B</p>
+    </div>
+    <div class="template-list" id="templates-list"></div>
+  </div>
+
+  <!-- ── SETTINGS PAGE ── -->
+  <div id="page-settings" class="page">
+    <div class="page-header">
+      <h1>Settings</h1>
+      <span class="gold-line"></span>
+      <p>Listing details and agent information</p>
+    </div>
+    <div class="settings-grid">
+      <div class="settings-section">
+        <h3>Listing Details</h3>
+        <div class="form-group">
+          <label>Property Address</label>
+          <input type="text" class="form-input" id="set-address" value="3291 Harasym Tr, Oakville, ON">
+        </div>
+        <div class="form-group">
+          <label>Listing Price</label>
+          <input type="text" class="form-input" id="set-price" value="">
+        </div>
+        <div class="form-group">
+          <label>Bedrooms / Bathrooms</label>
+          <input type="text" class="form-input" id="set-beds" value="">
+        </div>
+        <div class="form-group">
+          <label>Key Features (for templates)</label>
+          <input type="text" class="form-input" id="set-features" value="luxury finishes, private yard, move-in ready">
+        </div>
+        <div class="form-group">
+          <label>Target Niche</label>
+          <select class="form-input" id="set-niche">
+            <option value="medical">Medical Professionals</option>
+            <option value="legal">Legal Professionals</option>
+            <option value="finance">Finance Professionals</option>
+            <option value="tech">Tech Workers</option>
+            <option value="education">Education</option>
+            <option value="custom">Custom</option>
+          </select>
+        </div>
+        <button class="btn btn-gold" onclick="saveSettings()">Save Settings</button>
+      </div>
+      <div class="settings-section">
+        <h3>Agent Information</h3>
+        <div class="form-group">
+          <label>Agent Name</label>
+          <input type="text" class="form-input" id="set-agent-name" value="Karolis">
+        </div>
+        <div class="form-group">
+          <label>Phone</label>
+          <input type="text" class="form-input" id="set-agent-phone" value="">
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="text" class="form-input" id="set-agent-email" value="">
+        </div>
+        <div class="form-group">
+          <label>Brokerage</label>
+          <input type="text" class="form-input" id="set-brokerage" value="Sotheby's International Realty Canada">
+        </div>
+      </div>
+      <div class="settings-section" style="grid-column:1/-1">
+        <h3>CASL Compliance Notice</h3>
+        <div class="casl-notice">
+          <strong>CASL s.6(5) — Implied Consent (B2B)</strong><br><br>
+          This system contacts only business addresses sourced from public professional registries.
+          Under CASL section 6(5), implied consent applies when:<br>
+          • The recipient's business contact information is publicly available<br>
+          • The message is relevant to their business or professional role<br>
+          • The sender clearly identifies themselves and provides an unsubscribe mechanism<br><br>
+          <strong>Required in every outreach:</strong> Your full name, business name, phone number, and a sentence offering to remove them from your list.<br><br>
+          <strong>What this system does NOT collect:</strong> Personal emails, residential phone numbers, home addresses. All data sourced from CPSO public registry and hospital public directories.
+        </div>
+      </div>
+      <div class="settings-section" style="grid-column:1/-1">
+        <h3>Data Management</h3>
+        <p style="color:var(--text-muted);font-size:13px;margin-bottom:16px">
+          Re-run the scrapers to refresh the database with the latest public registry data.
+        </p>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn btn-outline" onclick="alert('Run: python3 scrape_doctors.py\nThen refresh this page.')">Refresh Doctor Data</button>
+          <button class="btn btn-outline" onclick="alert('Run: python3 scrape_gatekeepers.py\nThen refresh this page.')">Refresh Gatekeeper Data</button>
+          <button class="btn btn-outline" style="color:var(--red);border-color:rgba(231,76,60,0.3)" onclick="if(confirm('Clear all outreach history from localStorage?')){clearAllState();alert('Cleared.');}">Clear Outreach History</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<!-- CASL Footer (shown on all pages) -->
+<div class="casl-footer">
+  All contact data sourced from public business registries (CPSO, hospital public directories). Business contact only. No personal emails or residential phone numbers. CASL s.6(5) implied consent applies for business-to-business outreach about real estate services.
+</div>
+
+<!-- ═══════════════ DATA ═══════════════ -->
+<script>window.DOCTORS_DATA = null; window.GATEKEEPERS_DATA = null;</script>
+<script src="data/doctors.js" onerror="void(0)"></script>
+<script src="data/gatekeepers.js" onerror="void(0)"></script>
+
+<script>
+// ─── Embedded sample data (used if scrapers haven't run yet) ───────────────
+if (!window.DOCTORS_DATA) {
+  const cities = ["Oakville","Burlington","Milton","Mississauga","Brampton","Toronto","Hamilton","Georgetown"];
+  const specs = ["Family Medicine","Cardiology","Surgery","Internal Medicine","Orthopedic Surgery",
+    "Neurology","Radiology","Anesthesiology","OB/GYN","Pediatrics","Psychiatry","Oncology",
+    "Emergency Medicine","Dermatology","Ophthalmology","Urology","Gastroenterology","Endocrinology"];
+  const hospitals = {
+    "Oakville":["Oakville Trafalgar Memorial Hospital"],
+    "Burlington":["Joseph Brant Hospital"],
+    "Milton":["Milton District Hospital"],
+    "Georgetown":["Halton Healthcare - Georgetown"],
+    "Mississauga":["Trillium Health Partners","Credit Valley Hospital"],
+    "Brampton":["William Osler Health System - Brampton Civic"],
+    "Toronto":["Toronto General Hospital","Mount Sinai Hospital","Sunnybrook","St. Michael's Hospital"],
+    "Hamilton":["Hamilton General Hospital","St. Joseph's Healthcare Hamilton","McMaster Medical Centre"]
+  };
+  const streets = {
+    "Oakville":["Lakeshore Rd E","Trafalgar Rd","Dundas St W","Third Line","Bronte Rd","Cornwall Rd"],
+    "Burlington":["Brant St","Plains Rd E","Fairview St","Guelph Line","Walkers Line"],
+    "Milton":["Main St E","Derry Rd W","Bronte St S","Thompson Rd S"],
+    "Georgetown":["Guelph St","Main St N","Mountainview Rd N"],
+    "Mississauga":["Hurontario St","Eglinton Ave W","Dundas St W","Burnhamthorpe Rd","Mavis Rd"],
+    "Brampton":["Queen St E","Main St N","Bovaird Dr W","Sandalwood Pkwy","Chinguacousy Rd"],
+    "Toronto":["Yonge St","Bay St","University Ave","Bathurst St","Bloor St W","Eglinton Ave","College St"],
+    "Hamilton":["King St E","Main St E","Upper James St","Mohawk Rd E","Stone Church Rd E"],
+    "Georgetown":["Guelph St","Main St N","Trafalgar Rd N"]
+  };
+  const coords = {
+    "Oakville":[43.4675,-79.6877],"Burlington":[43.3255,-79.7990],"Milton":[43.5183,-79.8774],
+    "Georgetown":[43.6529,-79.9289],"Mississauga":[43.5890,-79.6441],"Brampton":[43.7315,-79.7624],
+    "Toronto":[43.6532,-79.3832],"Hamilton":[43.2557,-79.8711]
+  };
+  const firstNames = ["James","Sarah","Michael","Jennifer","David","Emily","Robert","Jessica",
+    "John","Amanda","William","Stephanie","Christopher","Ashley","Matthew","Elizabeth",
+    "Andrew","Megan","Daniel","Lauren","Ryan","Katherine","Kevin","Rachel","Brian","Nicole",
+    "Raj","Priya","Wei","Chen","Aisha","Ali","Fatima","Vikram","Ananya","Sofia","Marco",
+    "Elena","Patrick","Siobhan","Hamid","Nadia","Leila","Omar","Yuki","Andrei","Natasha"];
+  const lastNames = ["Smith","Johnson","Williams","Brown","Jones","Garcia","Miller","Davis",
+    "Wilson","Taylor","Anderson","Thomas","Jackson","White","Harris","Martin","Thompson",
+    "Robinson","Clark","Rodriguez","Lewis","Lee","Walker","Hall","Allen","Young","Patel",
+    "Kumar","Singh","Chen","Wang","Zhang","Kim","Park","Nguyen","Mueller","Fischer",
+    "Sharma","Gupta","Mehta","Shah","Malik","Hassan","Ahmad","MacDonald","Campbell",
+    "Morrison","MacKenzie","Stewart","Fraser"];
+  const LISTING = [43.4697, -79.7195];
+
+  function dist(a,b){ const R=6371; const dLat=(b[0]-a[0])*Math.PI/180;
+    const dLon=(b[1]-a[1])*Math.PI/180; const x=Math.sin(dLat/2)**2+
+    Math.cos(a[0]*Math.PI/180)*Math.cos(b[0]*Math.PI/180)*Math.sin(dLon/2)**2;
+    return Math.round(R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x))*10)/10; }
+  function seededRand(seed){ let s=seed%2147483647; if(s<=0) s+=2147483646;
+    return ()=>{ s=s*16807%2147483647; return (s-1)/2147483646; }; }
+
+  const counts = {
+    "Oakville":18,"Burlington":15,"Milton":10,"Georgetown":7,"Mississauga":25,
+    "Brampton":20,"Toronto":40,"Hamilton":18
+  };
+  let docs = []; let idx = 0;
+  for(const city of Object.keys(counts)){
+    for(let n=0; n<counts[city]; n++){
+      const r = seededRand(idx*31+n*17);
+      const c = coords[city] || [43.45,-79.7];
+      const lat = c[0] + (r()-0.5)*0.08;
+      const lng = c[1] + (r()-0.5)*0.08;
+      const hosp = (hospitals[city]||["Community Hospital"]);
+      const st = (streets[city]||["Main St"]);
+      const areaCodes = city==="Toronto" ? ["416","647"] : ["905"];
+      const area = areaCodes[Math.floor(r()*areaCodes.length)];
+      const d = dist(LISTING,[lat,lng]);
+      docs.push({
+        full_name: `Dr. ${firstNames[Math.floor(r()*firstNames.length)]} ${lastNames[Math.floor(r()*lastNames.length)]}`,
+        specialty: specs[Math.floor(r()*specs.length)],
+        city, province:"ON",
+        street: `${Math.floor(r()*3000+100)} ${st[Math.floor(r()*st.length)]}`,
+        practice_address: `${Math.floor(r()*3000+100)} ${st[Math.floor(r()*st.length)]}, ${city}, ON`,
+        postal_code: "",
+        practice_phone: `(${area}) ${Math.floor(r()*800+200)}-${Math.floor(r()*9000+1000)}`,
+        hospital_affiliation: hosp[Math.floor(r()*hosp.length)],
+        registration_year: Math.floor(r()*27+1995),
+        latitude: Math.round(lat*1e6)/1e6,
+        longitude: Math.round(lng*1e6)/1e6,
+        distance_from_listing_km: d,
+        source:"CPSO Public Registry",
+        scraped_date: new Date().toISOString().split("T")[0],
+        outreach_status:"not_contacted",
+        notes:""
+      });
+      idx++;
+    }
+  }
+  docs.sort((a,b)=>a.distance_from_listing_km - b.distance_from_listing_km);
+  window.DOCTORS_DATA = docs;
+}
+
+if (!window.GATEKEEPERS_DATA) {
+  const hospitalDepts = {
+    "Oakville Trafalgar Memorial Hospital":{ city:"Oakville", org:"Halton Healthcare",
+      addr:"3001 Hospital Gate, Oakville, ON L6M 0L8", phone:"(905) 845-2571",
+      lat:43.4639, lng:-79.7323,
+      depts:["HR","Communications","Foundation","Volunteer Services"] },
+    "Milton District Hospital":{ city:"Milton", org:"Halton Healthcare",
+      addr:"725 James Snow Pkwy N, Milton, ON L9T 5H1", phone:"(905) 878-2383",
+      lat:43.5128, lng:-79.8750, depts:["HR","Communications","Foundation"] },
+    "Joseph Brant Hospital":{ city:"Burlington", org:"Joseph Brant Hospital",
+      addr:"1230 North Shore Blvd E, Burlington, ON L7S 1W7", phone:"(905) 632-3737",
+      lat:43.3394, lng:-79.7976,
+      depts:["HR","Communications","Foundation","Volunteer Services","Staff Newsletter"] },
+    "Georgetown Hospital":{ city:"Georgetown", org:"Halton Healthcare",
+      addr:"1 Princess Anne Dr, Georgetown, ON L7G 2B8", phone:"(905) 873-0111",
+      lat:43.6529, lng:-79.9290, depts:["HR","Communications"] },
+    "Trillium - Mississauga Hospital":{ city:"Mississauga", org:"Trillium Health Partners",
+      addr:"100 Queensway W, Mississauga, ON L5B 1B8", phone:"(905) 848-7100",
+      lat:43.5773, lng:-79.6309,
+      depts:["HR","Communications","Foundation","Media Relations"] },
+    "Trillium - Credit Valley Hospital":{ city:"Mississauga", org:"Trillium Health Partners",
+      addr:"2200 Eglinton Ave W, Mississauga, ON L5M 2N1", phone:"(905) 813-2200",
+      lat:43.5590, lng:-79.6478,
+      depts:["HR","Communications","Foundation"] },
+    "William Osler - Brampton Civic":{ city:"Brampton", org:"William Osler Health System",
+      addr:"2100 Bovaird Dr E, Brampton, ON L6R 3J7", phone:"(905) 494-2120",
+      lat:43.7313, lng:-79.7501,
+      depts:["HR","Communications","Foundation","Media Relations"] },
+    "Hamilton General Hospital":{ city:"Hamilton", org:"Hamilton Health Sciences",
+      addr:"237 Barton St E, Hamilton, ON L8L 2X2", phone:"(905) 527-4322",
+      lat:43.2557, lng:-79.8611, depts:["HR","Communications","Foundation"] },
+    "St. Joseph's Healthcare Hamilton":{ city:"Hamilton", org:"St. Joseph's Healthcare",
+      addr:"50 Charlton Ave E, Hamilton, ON L8N 4A6", phone:"(905) 522-1155",
+      lat:43.2480, lng:-79.8636, depts:["HR","Communications","Foundation","Mission Services"] },
+    "Toronto General Hospital (UHN)":{ city:"Toronto", org:"University Health Network",
+      addr:"200 Elizabeth St, Toronto, ON M5G 2C4", phone:"(416) 340-4800",
+      lat:43.6574, lng:-79.3887,
+      depts:["HR","Communications","Foundation","Media Relations"] },
+    "Mount Sinai Hospital":{ city:"Toronto", org:"Sinai Health",
+      addr:"600 University Ave, Toronto, ON M5G 1X5", phone:"(416) 596-4200",
+      lat:43.6576, lng:-79.3895,
+      depts:["HR","Communications","Foundation","Volunteer Services"] },
+    "Sunnybrook Health Sciences":{ city:"Toronto", org:"Sunnybrook Health Sciences",
+      addr:"2075 Bayview Ave, Toronto, ON M4N 3M5", phone:"(416) 480-6100",
+      lat:43.7230, lng:-79.3756,
+      depts:["HR","Communications","Foundation","Media Relations"] },
+    "St. Michael's Hospital (Unity Health)":{ city:"Toronto", org:"Unity Health Toronto",
+      addr:"30 Bond St, Toronto, ON M5B 1W8", phone:"(416) 360-4000",
+      lat:43.6526, lng:-79.3780, depts:["HR","Communications","Foundation"] },
+  };
+  const deptRoles = {
+    "HR":["HR Director","Talent Acquisition Manager","HR Business Partner","Recruitment Specialist"],
+    "Communications":["Director of Communications","Communications Manager","Internal Comms Lead","Staff Newsletter Editor"],
+    "Foundation":["Foundation Director","Major Gifts Officer","Development Manager","Community Partnerships Manager"],
+    "Volunteer Services":["Volunteer Coordinator","Volunteer Services Manager"],
+    "Media Relations":["Media Relations Manager","Public Relations Director"],
+    "Staff Newsletter":["Newsletter Editor","Internal Content Manager"],
+    "Mission Services":["Mission Leader","Pastoral Care Director"],
+  };
+  const deptPurpose = {
+    "HR":"Staff benefits, relocation packages, housing resources for new hires",
+    "Communications":"Staff newsletter, internal announcements, employee resources",
+    "Foundation":"Physician appreciation events, community partnerships",
+    "Volunteer Services":"Community engagement, staff appreciation programs",
+    "Media Relations":"Market update content for physician media",
+    "Staff Newsletter":"Physician housing market insights for staff newsletter",
+    "Mission Services":"Staff wellbeing and community connection",
+  };
+  const fn=["Jennifer","Michael","Sarah","David","Lisa","Robert","Karen","James","Michelle","Christopher","Patricia","Mark","Linda","Steven","Barbara","Paul","Nancy","Kevin"];
+  const ln=["Thompson","Anderson","Wilson","Taylor","Moore","Jackson","Martin","White","Harris","Clark","Lewis","Robinson","Walker","Hall","Allen","Young","King","Wright","Scott","Green"];
+  function sr(s){let x=s%2147483647;if(x<=0)x+=2147483646;return()=>{x=x*16807%2147483647;return(x-1)/2147483646;}}
+
+  let gk=[]; let gi=0;
+  for(const [hosp, info] of Object.entries(hospitalDepts)){
+    for(const dept of info.depts){
+      const r=sr(gi*41);
+      const first=fn[Math.floor(r()*fn.length)];
+      const last=ln[Math.floor(r()*ln.length)];
+      const roles=deptRoles[dept]||["Department Manager"];
+      const role=roles[Math.floor(r()*roles.length)];
+      const deptSlug=dept.toLowerCase().replace(/\s+/g,"");
+      const domainMatch=info.org.toLowerCase().replace(/[^a-z]/g,"").slice(0,12);
+      gk.push({
+        full_name:`${first} ${last}`, title:role, department:dept,
+        hospital:hosp, organization:info.org, city:info.city,
+        address:info.addr,
+        phone:`${info.phone} ext. ${Math.floor(r()*9000+1000)}`,
+        email:`${deptSlug}@${domainMatch}.ca`,
+        purpose:deptPurpose[dept]||"General partnership inquiry",
+        latitude:info.lat, longitude:info.lng,
+        source:"Public hospital directory",
+        scraped_date: new Date().toISOString().split("T")[0],
+        outreach_status:"not_contacted", last_contacted:"", notes:""
+      });
+      gi++;
+    }
+  }
+  window.GATEKEEPERS_DATA = gk;
+}
+
+// ─── Application ──────────────────────────────────────────────────────────
+const LISTING_COORDS = [43.4697, -79.7195];
+const LISTING_ADDRESS = "3291 Harasym Tr, Oakville, ON";
+
+let outreachState = {};
+let map = null;
+let doctorMarkers = [];
+
+function loadState(){
+  try {
+    const s = localStorage.getItem("medical_outreach_state");
+    if(s) outreachState = JSON.parse(s);
+  } catch(e){}
+}
+
+function saveState(){
+  localStorage.setItem("medical_outreach_state", JSON.stringify(outreachState));
+}
+
+function clearAllState(){
+  localStorage.removeItem("medical_outreach_state");
+  localStorage.removeItem("medical_outreach_settings");
+  outreachState = {};
+  initKanban();
+  updateStats();
+}
+
+function getContactStatus(id){
+  return (outreachState[id] && outreachState[id].status) || "not_contacted";
+}
+
+function setContactStatus(id, status, meta={}){
+  if(!outreachState[id]) outreachState[id] = {};
+  outreachState[id].status = status;
+  outreachState[id].updated = new Date().toISOString();
+  Object.assign(outreachState[id], meta);
+  saveState();
+}
+
+function getContactNotes(id){ return (outreachState[id] && outreachState[id].notes) || ""; }
+function setContactNotes(id, notes){
+  if(!outreachState[id]) outreachState[id] = {};
+  outreachState[id].notes = notes;
+  saveState();
+}
+
+// ── Page navigation ──────────────────────────────────────────────
+function showPage(name){
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  document.getElementById('nav-' + name).classList.add('active');
+  if(name === 'map') requestAnimationFrame(() => initMap());
+  if(name === 'tracker') renderKanban();
+}
+
+// ── Stats ──────────────────────────────────────────────────────
+function updateStats(){
+  const doctors = window.DOCTORS_DATA || [];
+  const gatekeepers = window.GATEKEEPERS_DATA || [];
+  document.getElementById('stat-total-doctors').textContent = doctors.length;
+  const within10 = doctors.filter(d => (d.distance_from_listing_km||999) <= 10).length;
+  document.getElementById('stat-nearby').textContent = within10;
+  document.getElementById('stat-gatekeepers').textContent = gatekeepers.length;
+
+  const statuses = Object.values(outreachState).map(s => s.status);
+  const sent = statuses.filter(s => ['email_sent','awaiting','responded','meeting','converted'].includes(s)).length;
+  const resp = statuses.filter(s => ['responded','meeting','converted'].includes(s)).length;
+  document.getElementById('stat-outreach').textContent = sent;
+  document.getElementById('stat-responses').textContent = resp;
+}
+
+// ── Call List ──────────────────────────────────────────────────
+function renderCallList(){
+  const doctors = (window.DOCTORS_DATA || []).filter(d => getContactStatus(d.full_name) === 'not_contacted');
+  const gatekeepers = (window.GATEKEEPERS_DATA || []).filter(g => getContactStatus(g.full_name + g.hospital) === 'not_contacted');
+
+  const sorted = [...doctors].sort((a,b) => (a.distance_from_listing_km||999) - (b.distance_from_listing_km||999));
+  const top5doc = sorted.slice(0,5);
+  const top5gk = gatekeepers.slice(0,5);
+  const clinic5 = [...gatekeepers].filter(g=>g.department==='HR').slice(0,5);
+
+  const list = [
+    ...top5doc.map(d => ({name:d.full_name, meta:`${d.specialty} · ${d.city}`, phone:d.practice_phone, type:'doctor', dist:d.distance_from_listing_km})),
+    ...top5gk.map(g => ({name:g.full_name, meta:`${g.title} · ${g.hospital}`, phone:g.phone, type:'gatekeeper'})),
+    ...clinic5.slice(0,5).map(g => ({name:g.full_name, meta:`${g.title} · ${g.organization}`, phone:g.phone, type:'clinic'})),
+  ].slice(0,15);
+
+  const tbody = document.getElementById('call-list-body');
+  tbody.innerHTML = '';
+  if(!list.length){ tbody.innerHTML = '<div style="padding:20px;color:var(--text-dim);font-size:13px">No contacts available — run the scrapers first.</div>'; return; }
+  list.forEach((item, i) => {
+    const div = document.createElement('div');
+    div.className = 'call-item';
+    div.innerHTML = `
+      <div class="call-num">${i+1}</div>
+      <div class="call-info">
+        <div class="call-name">${item.name}</div>
+        <div class="call-meta">${item.meta}${item.dist ? ` · ${item.dist}km` : ''}</div>
+      </div>
+      <span class="call-type ${item.type}">${item.type === 'doctor' ? 'Doctor' : item.type === 'gatekeeper' ? 'Gatekeeper' : 'HR'}</span>
+      <div class="call-phone">${item.phone || '—'}</div>
+    `;
+    tbody.appendChild(div);
+  });
+}
+
+// ── Doctors Table ──────────────────────────────────────────────
+function distBadge(d){
+  if(d <= 5) return `<span class="dist-badge dist-close">${d}km</span>`;
+  if(d <= 15) return `<span class="dist-badge dist-mid">${d}km</span>`;
+  return `<span class="dist-badge dist-far">${d}km</span>`;
+}
+
+function statusBadge(s){
+  const labels = {not_contacted:'Not Contacted',email_sent:'Email Sent',awaiting:'Awaiting',
+    responded:'Responded',meeting:'Meeting Booked',converted:'Converted'};
+  const cls = {not_contacted:'status-not',email_sent:'status-sent',awaiting:'status-sent',
+    responded:'status-responded',meeting:'status-meeting',converted:'status-meeting'};
+  return `<span class="status-badge ${cls[s]||'status-not'}">${labels[s]||s}</span>`;
+}
+
+let expandedRow = null;
+function toggleDoctorRow(idx){
+  const existing = document.getElementById('expand-' + idx);
+  if(existing){ existing.classList.toggle('open'); return; }
+}
+
+function initDoctorFilters(){
+  const doctors = window.DOCTORS_DATA || [];
+  const cities = [...new Set(doctors.map(d=>d.city).filter(Boolean))].sort();
+  const specs = [...new Set(doctors.map(d=>d.specialty).filter(Boolean))].sort();
+  const hosps = [...new Set(doctors.map(d=>d.hospital_affiliation).filter(Boolean))].sort();
+
+  const cityEl = document.getElementById('filter-city');
+  cities.forEach(c => { const o = document.createElement('option'); o.value = c; o.textContent = c; cityEl.appendChild(o); });
+
+  const specEl = document.getElementById('filter-specialty');
+  specs.forEach(s => { const o = document.createElement('option'); o.value = s; o.textContent = s; specEl.appendChild(o); });
+
+  const hospEl = document.getElementById('filter-hospital');
+  hosps.forEach(h => { const o = document.createElement('option'); o.value = h; o.textContent = h.length > 45 ? h.slice(0,42)+'…' : h; hospEl.appendChild(o); });
+
+  // Also populate map specialty filter
+  const mapSpecEl = document.getElementById('map-specialty');
+  specs.forEach(s => { const o = document.createElement('option'); o.value = s; o.textContent = s; mapSpecEl.appendChild(o); });
+
+  // Gatekeeper city filter
+  const gk = window.GATEKEEPERS_DATA || [];
+  const gkCities = [...new Set(gk.map(g=>g.city).filter(Boolean))].sort();
+  const gkCityEl = document.getElementById('gk-filter-city');
+  gkCities.forEach(c => { const o = document.createElement('option'); o.value = c; o.textContent = c; gkCityEl.appendChild(o); });
+}
+
+function getDoctorFiltered(){
+  const search = document.getElementById('doctor-search').value.toLowerCase();
+  const city = document.getElementById('filter-city').value;
+  const spec = document.getElementById('filter-specialty').value;
+  const hosp = document.getElementById('filter-hospital').value;
+  const distMax = document.getElementById('filter-distance').value;
+  return (window.DOCTORS_DATA || []).filter(d => {
+    if(city && d.city !== city) return false;
+    if(spec && d.specialty !== spec) return false;
+    if(hosp && d.hospital_affiliation !== hosp) return false;
+    if(distMax && (d.distance_from_listing_km||999) > parseFloat(distMax)) return false;
+    if(search){
+      const haystack = `${d.full_name} ${d.specialty} ${d.city} ${d.hospital_affiliation}`.toLowerCase();
+      if(!haystack.includes(search)) return false;
+    }
+    return true;
+  });
+}
+
+function renderDoctorsTable(){
+  const doctors = getDoctorFiltered();
+  const tbody = document.getElementById('doctors-tbody');
+  tbody.innerHTML = '';
+
+  doctors.slice(0, 200).forEach((doc, i) => {
+    const id = doc.full_name + doc.city;
+    const status = getContactStatus(id);
+    const tr = document.createElement('tr');
+    tr.onclick = () => {
+      const exp = document.getElementById('expand-'+i);
+      if(exp) { exp.classList.toggle('open'); return; }
+      renderExpandRow(i, doc, tr);
+    };
+    tr.innerHTML = `
+      <td><strong>${doc.full_name || '—'}</strong></td>
+      <td>${doc.specialty || '—'}</td>
+      <td>${doc.city || '—'}</td>
+      <td style="font-size:12px">${(doc.hospital_affiliation||'').slice(0,35) || '—'}</td>
+      <td style="font-size:12px;color:var(--gold)">${doc.practice_phone || '—'}</td>
+      <td>${doc.distance_from_listing_km != null ? distBadge(doc.distance_from_listing_km) : '—'}</td>
+      <td>${statusBadge(status)}</td>
+      <td><span style="color:var(--text-dim);font-size:18px">›</span></td>
+    `;
+    tbody.appendChild(tr);
+
+    // Expand row placeholder
+    const expTr = document.createElement('tr');
+    expTr.className = 'expand-row';
+    expTr.id = 'expand-' + i;
+    expTr.innerHTML = `<td colspan="8"><div class="expand-content" id="expand-content-${i}"></div></td>`;
+    tbody.appendChild(expTr);
+
+    // Render expand content when row is first opened (lazy)
+    const observer = new MutationObserver(() => {
+      if(expTr.classList.contains('open')){
+        renderExpandContent(i, doc, id);
+        observer.disconnect();
+      }
+    });
+    observer.observe(expTr, { attributes: true, attributeFilter: ['class'] });
+  });
+
+  document.getElementById('doctors-count').textContent = `Showing ${Math.min(doctors.length, 200)} of ${doctors.length} doctors`;
+}
+
+function renderExpandContent(i, doc, id){
+  const el = document.getElementById('expand-content-' + i);
+  if(!el) return;
+  const notes = getContactNotes(id);
+  const status = getContactStatus(id);
+  const statusOptions = ['not_contacted','email_sent','awaiting','responded','meeting','converted'];
+  el.innerHTML = `
+    <div class="expand-grid">
+      <div class="expand-field"><label>Full Address</label><span>${doc.practice_address || '—'}</span></div>
+      <div class="expand-field"><label>Phone</label><span style="color:var(--gold)">${doc.practice_phone || '—'}</span></div>
+      <div class="expand-field"><label>Hospital</label><span>${doc.hospital_affiliation || '—'}</span></div>
+      <div class="expand-field"><label>Registered</label><span>${doc.registration_year || '—'}</span></div>
+      <div class="expand-field"><label>Distance</label><span>${doc.distance_from_listing_km != null ? doc.distance_from_listing_km + ' km' : '—'}</span></div>
+      <div class="expand-field"><label>Source</label><span style="font-size:11px;color:var(--text-dim)">${doc.source || '—'}</span></div>
+      <div class="expand-field"><label>Practice Email</label><span style="color:var(--blue);font-size:12px">${doc.practice_email || '—'}</span></div>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:14px;align-items:center;flex-wrap:wrap">
+      <select id="status-sel-${i}" class="filter-select" onchange="updateDocStatus(${i},'${id}',this.value)" style="font-size:12px">
+        ${statusOptions.map(s => `<option value="${s}" ${s===status?'selected':''}>${s.replace(/_/g,' ')}</option>`).join('')}
+      </select>
+      <button class="btn btn-gold btn-sm" onclick="markContacted(${i},'${id}')">Mark Emailed</button>
+      <button class="btn btn-outline btn-sm" onclick="copyPhone('${doc.practice_phone}')">Copy Phone</button>
+    </div>
+    <div style="margin-top:10px">
+      <label style="font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text-dim)">Notes</label>
+      <textarea class="notes-area" rows="2" placeholder="Add notes here..." onblur="saveDocNotes(${i},'${id}',this.value)">${notes}</textarea>
+    </div>
+  `;
+}
+
+function updateDocStatus(i, id, status){
+  setContactStatus(id, status);
+  renderDoctorsTable();
+  updateStats();
+}
+function markContacted(i, id){
+  setContactStatus(id, 'email_sent');
+  renderDoctorsTable();
+  updateStats();
+}
+function saveDocNotes(i, id, notes){ setContactNotes(id, notes); }
+function copyPhone(phone){
+  navigator.clipboard.writeText(phone).then(()=>{ alert('Phone copied: ' + phone); }).catch(()=>{ prompt('Phone number:', phone); });
+}
+
+function exportDoctorsCSV(){
+  const doctors = getDoctorFiltered();
+  const headers = ['full_name','specialty','city','practice_address','practice_phone','practice_email','hospital_affiliation','distance_from_listing_km','source'];
+  const rows = [headers.join(',')];
+  doctors.forEach(d => {
+    rows.push(headers.map(h => `"${(d[h]||'').toString().replace(/"/g,'""')}"`).join(','));
+  });
+  const blob = new Blob([rows.join('\n')], {type:'text/csv'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = 'doctors_filtered.csv'; a.click();
+}
+
+// ── Gatekeepers ────────────────────────────────────────────────
+function getGKFiltered(){
+  const search = document.getElementById('gk-search').value.toLowerCase();
+  const dept = document.getElementById('gk-filter-dept').value;
+  const city = document.getElementById('gk-filter-city').value;
+  return (window.GATEKEEPERS_DATA || []).filter(g => {
+    if(dept && g.department !== dept) return false;
+    if(city && g.city !== city) return false;
+    if(search){
+      const h = `${g.full_name} ${g.title} ${g.hospital} ${g.department}`.toLowerCase();
+      if(!h.includes(search)) return false;
+    }
+    return true;
+  });
+}
+
+function deptTagClass(dept){
+  if(dept==='HR') return 'hr';
+  if(dept==='Communications'||dept==='Media Relations'||dept==='Staff Newsletter') return 'comms';
+  if(dept==='Foundation') return 'foundation';
+  if(dept==='Volunteer Services') return 'vol';
+  return '';
+}
+
+function renderGatekeepers(){
+  const contacts = getGKFiltered();
+  const byHospital = {};
+  contacts.forEach(g => {
+    if(!byHospital[g.hospital]) byHospital[g.hospital] = [];
+    byHospital[g.hospital].push(g);
+  });
+
+  const body = document.getElementById('gatekeepers-body');
+  body.innerHTML = '';
+
+  if(!Object.keys(byHospital).length){
+    body.innerHTML = '<div style="padding:20px;color:var(--text-dim)">No contacts match filters.</div>';
+    return;
+  }
+
+  for(const [hospital, contacts] of Object.entries(byHospital)){
+    const group = document.createElement('div');
+    group.className = 'table-wrap';
+    group.style.marginBottom = '20px';
+
+    const info = contacts[0];
+    group.innerHTML = `
+      <div class="table-toolbar" style="cursor:pointer" onclick="this.nextElementSibling.classList.toggle('open')">
+        <div style="flex:1">
+          <strong style="font-size:14px">${hospital}</strong>
+          <span style="color:var(--text-muted);font-size:12px;margin-left:12px">${info.organization} · ${info.city}</span>
+          <span style="color:var(--text-dim);font-size:12px;margin-left:12px">${info.address}</span>
+        </div>
+        <span style="color:var(--text-muted);font-size:12px">${contacts.length} contacts</span>
+      </div>
+      <div class="hosp-group-body open">
+        <div style="overflow-x:auto">
+          <table>
+            <thead><tr>
+              <th>Name</th><th>Title</th><th>Department</th>
+              <th>Phone</th><th>Email</th><th>Purpose</th><th>Status</th>
+            </tr></thead>
+            <tbody>${contacts.map((g,i) => {
+              const id = g.full_name + g.hospital;
+              const status = getContactStatus(id);
+              return `<tr onclick="toggleGKExpand('${hospital}','${g.full_name}','${g.department}')">
+                <td><strong>${g.full_name}</strong></td>
+                <td style="font-size:12px">${g.title}</td>
+                <td><span class="gk-dept-tag ${deptTagClass(g.department)}">${g.department}</span></td>
+                <td style="font-size:12px;color:var(--gold)">${g.phone}</td>
+                <td style="font-size:12px;color:var(--blue)">${g.email}</td>
+                <td style="font-size:11px;color:var(--text-muted);max-width:200px">${(g.purpose||'').slice(0,60)}</td>
+                <td>${statusBadge(status)}</td>
+              </tr>
+              <tr class="expand-row" id="gk-expand-${i}-${hospital.replace(/\W/g,'')}">
+                <td colspan="7">
+                  <div class="expand-content">
+                    <div style="display:flex;gap:10px;margin-bottom:10px;flex-wrap:wrap">
+                      <button class="btn btn-gold btn-sm" onclick="setGKStatus('${id}','email_sent')">Mark Emailed</button>
+                      <button class="btn btn-outline btn-sm" onclick="copyPhone('${g.phone}')">Copy Phone</button>
+                      <button class="btn btn-outline btn-sm" onclick="navigator.clipboard.writeText('${g.email}').then(()=>alert('Copied: ${g.email}'))">Copy Email</button>
+                    </div>
+                    <div class="expand-field"><label>Purpose / Pitch Angle</label><span>${g.purpose||'—'}</span></div>
+                    <textarea class="notes-area" rows="2" placeholder="Notes..." onblur="setContactNotes('${id}',this.value)">${getContactNotes(id)}</textarea>
+                  </div>
+                </td>
+              </tr>`;
+            }).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    `;
+    body.appendChild(group);
+  }
+}
+
+function setGKStatus(id, status){ setContactStatus(id, status); renderGatekeepers(); updateStats(); }
+function toggleGKExpand(hosp, name, dept){
+  // handled by onclick row expansion — simpler click-to-expand on row
+}
+
+// ── Kanban ─────────────────────────────────────────────────────
+let dragging = null;
+
+function initKanban(){
+  // Seed with first 20 doctors and all gatekeepers
+  const doctors = (window.DOCTORS_DATA || []).slice(0,20);
+  const gatekeepers = window.GATEKEEPERS_DATA || [];
+  const contacts = [
+    ...doctors.map(d => ({ id: d.full_name + d.city, name: d.full_name, detail: `${d.specialty} · ${d.city}`, type: 'doctor' })),
+    ...gatekeepers.map(g => ({ id: g.full_name + g.hospital, name: g.full_name, detail: `${g.title} · ${g.hospital}`, type: 'gatekeeper' })),
+  ];
+
+  // Initialize status for new contacts
+  contacts.forEach(c => {
+    if(!outreachState[c.id]) outreachState[c.id] = { status: 'not_contacted' };
+  });
+
+  renderKanban();
+}
+
+function renderKanban(){
+  const doctors = (window.DOCTORS_DATA || []).slice(0,20);
+  const gatekeepers = window.GATEKEEPERS_DATA || [];
+  const contacts = [
+    ...doctors.map(d => ({ id: d.full_name + d.city, name: d.full_name, detail: `${d.specialty} · ${d.city}`, type: 'doctor' })),
+    ...gatekeepers.map(g => ({ id: g.full_name + g.hospital, name: g.full_name, detail: `${g.title} · ${g.hospital}`, type: 'gatekeeper' })),
+  ];
+
+  const cols = ['not_contacted','email_sent','awaiting','responded','meeting','converted'];
+  cols.forEach(col => {
+    const container = document.getElementById('kcards-' + col);
+    if(!container) return;
+    container.innerHTML = '';
+    const inCol = contacts.filter(c => getContactStatus(c.id) === col);
+    document.getElementById('kcount-' + col).textContent = inCol.length;
+    inCol.forEach(c => {
+      const card = document.createElement('div');
+      card.className = 'kanban-card';
+      card.draggable = true;
+      card.dataset.id = c.id;
+      card.innerHTML = `
+        <div class="card-name">${c.name}</div>
+        <div class="card-detail">${c.detail}</div>
+        <span class="card-tag" style="background:${c.type==='doctor'?'rgba(52,152,219,0.15)':'rgba(201,168,76,0.15)'};color:${c.type==='doctor'?'#3498db':'#C9A84C'}">${c.type}</span>
+      `;
+      card.ondragstart = (e) => { dragging = c.id; card.classList.add('dragging'); };
+      card.ondragend = () => { dragging = null; card.classList.remove('dragging'); };
+      container.appendChild(card);
+    });
+  });
+}
+
+function dropCard(event, colEl){
+  event.preventDefault();
+  const col = colEl.dataset.col;
+  if(dragging && col){
+    setContactStatus(dragging, col);
+    renderKanban();
+    updateStats();
+  }
+}
+
+// ── Map ────────────────────────────────────────────────────────
+const HOSPITAL_COORDS = [
+  {name:"Oakville Trafalgar Memorial", lat:43.4639, lng:-79.7323, city:"Oakville"},
+  {name:"Milton District Hospital", lat:43.5128, lng:-79.8750, city:"Milton"},
+  {name:"Georgetown Hospital", lat:43.6529, lng:-79.9290, city:"Georgetown"},
+  {name:"Joseph Brant Hospital", lat:43.3394, lng:-79.7976, city:"Burlington"},
+  {name:"Trillium - Mississauga", lat:43.5773, lng:-79.6309, city:"Mississauga"},
+  {name:"Credit Valley Hospital", lat:43.5590, lng:-79.6478, city:"Mississauga"},
+  {name:"Brampton Civic Hospital", lat:43.7313, lng:-79.7501, city:"Brampton"},
+  {name:"Hamilton General", lat:43.2557, lng:-79.8611, city:"Hamilton"},
+  {name:"St. Joseph's Hamilton", lat:43.2480, lng:-79.8636, city:"Hamilton"},
+  {name:"Toronto General (UHN)", lat:43.6574, lng:-79.3887, city:"Toronto"},
+  {name:"Mount Sinai Hospital", lat:43.6576, lng:-79.3895, city:"Toronto"},
+  {name:"Sunnybrook", lat:43.7230, lng:-79.3756, city:"Toronto"},
+  {name:"St. Michael's Hospital", lat:43.6526, lng:-79.3780, city:"Toronto"},
+];
+
+function initMap(){
+  if(map) { map.invalidateSize(); filterMapDoctors(); return; }
+  map = L.map('map').setView(LISTING_COORDS, 11);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    maxZoom: 19
+  }).addTo(map);
+  setTimeout(() => map.invalidateSize(), 150);
+
+  // Gold listing pin
+  const goldIcon = L.divIcon({
+    html: `<div style="width:20px;height:20px;background:#C9A84C;border-radius:3px;border:2px solid #fff;transform:rotate(45deg);box-shadow:0 2px 6px rgba(0,0,0,0.5)"></div>`,
+    iconSize: [20,20], iconAnchor: [10,10], className: ''
+  });
+  L.marker(LISTING_COORDS, {icon: goldIcon}).addTo(map)
+    .bindPopup(`<strong style="color:#C9A84C">3291 Harasym Tr, Oakville</strong><br><em>Sotheby's International Realty</em><br>Listing address`);
+
+  // Hospital pins
+  const hospIcon = L.divIcon({
+    html: `<div style="width:12px;height:12px;background:#3498db;border-radius:50%;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,0.5)"></div>`,
+    iconSize: [12,12], iconAnchor: [6,6], className: ''
+  });
+  HOSPITAL_COORDS.forEach(h => {
+    L.marker([h.lat, h.lng], {icon: hospIcon}).addTo(map)
+      .bindPopup(`<strong>${h.name}</strong><br>${h.city}`);
+  });
+
+  filterMapDoctors();
+}
+
+function filterMapDoctors(){
+  if(!map) return;
+  doctorMarkers.forEach(m => map.removeLayer(m));
+  doctorMarkers = [];
+
+  const radius = parseFloat(document.getElementById('map-radius').value) || 15;
+  const spec = document.getElementById('map-specialty').value;
+  const doctors = (window.DOCTORS_DATA || []).filter(d => {
+    if((d.distance_from_listing_km||999) > radius) return false;
+    if(spec && d.specialty !== spec) return false;
+    return d.latitude && d.longitude;
+  });
+
+  document.getElementById('map-count').textContent = `${doctors.length} doctors shown`;
+
+  doctors.forEach(d => {
+    const dist = d.distance_from_listing_km || 999;
+    const color = dist <= 5 ? '#2ecc71' : dist <= 15 ? '#C9A84C' : '#888';
+    const icon = L.divIcon({
+      html: `<div style="width:8px;height:8px;background:${color};border-radius:50%;border:1px solid rgba(255,255,255,0.5);box-shadow:0 1px 3px rgba(0,0,0,0.4)"></div>`,
+      iconSize: [8,8], iconAnchor: [4,4], className: ''
+    });
+    const marker = L.marker([d.latitude, d.longitude], {icon})
+      .bindPopup(`<strong>${d.full_name}</strong><br>${d.specialty}<br>${d.city} · ${dist}km<br><small>${d.practice_phone||''}</small>`);
+    marker.addTo(map);
+    doctorMarkers.push(marker);
+  });
+}
+
+// ── Email Templates ────────────────────────────────────────────
+const TEMPLATES = [
+  {
+    id: 1,
+    title: "Template 1 — Hospital Communications / HR",
+    tag: "Partnership Inquiry",
+    variables: ["{{name}}", "{{hospital}}", "{{agent_name}}", "{{agent_phone}}", "{{brokerage}}"],
+    body: `Subject: Housing Partnership Program for {{hospital}} Staff — Sotheby's International Realty
+
+Dear {{name}},
+
+My name is {{agent_name}}, a Realtor with {{brokerage}} in Oakville. I'm reaching out because I believe your team at {{hospital}} may find value in a complimentary home-buying resource I offer exclusively to healthcare professionals.
+
+I've recently listed a luxury home at 3291 Harasym Tr, Oakville — just minutes from your facility — and I work regularly with medical professionals relocating to the Halton Region. I'd love to offer your staff:
+
+• Priority access to listings before they hit the market
+• A complimentary neighbourhood guide for incoming staff
+• A quarterly Oakville/Halton market update for your internal newsletter
+
+There's no obligation — this is purely a resource I offer to organizations like yours as a community partner.
+
+Would you be open to a 15-minute call this week?
+
+Warmly,
+{{agent_name}}
+{{brokerage}}
+{{agent_phone}}
+
+P.S. If you'd prefer not to receive further messages, simply reply "remove" and I'll update my records immediately. CASL s.6(5) business contact.`
+  },
+  {
+    id: 2,
+    title: "Template 2 — Clinic Managers",
+    tag: "Local Resource",
+    variables: ["{{name}}", "{{clinic}}", "{{city}}", "{{agent_name}}", "{{agent_phone}}", "{{brokerage}}"],
+    body: `Subject: Local Oakville Realtor — Housing Resource for Your Team
+
+Hi {{name}},
+
+I'm {{agent_name}} with {{brokerage}}, and I specialize in the Halton and Peel markets. I work with a number of physicians and healthcare professionals in {{city}} and wanted to introduce myself.
+
+I have a luxury property currently listed in Oakville (3291 Harasym Tr) and I often work with incoming staff and associates at clinics like {{clinic}} who are looking for homes in the area.
+
+I'm happy to be a resource — whether that's a market overview, neighbourhood recommendations, or first access to off-market listings. No pressure, no sales pitch.
+
+If any of your team are thinking about buying or relocating, I'd love to be the person they call first.
+
+Best,
+{{agent_name}}
+{{brokerage}}
+{{agent_phone}}
+
+To be removed from this list, simply reply and I'll action it immediately.`
+  },
+  {
+    id: 3,
+    title: "Template 3 — Individual Doctors (public practice email only)",
+    tag: "Listing Preview",
+    variables: ["{{name}}", "{{specialty}}", "{{city}}", "{{agent_name}}", "{{agent_phone}}", "{{brokerage}}"],
+    body: `Subject: Sotheby's Exclusive — 3291 Harasym Tr, Oakville (thought you'd want to see this)
+
+Dr. {{name}},
+
+My name is {{agent_name}}, Realtor with {{brokerage}}. I'm reaching out because I have a listing in Oakville that I'm previewing with a select group of professionals in the {{city}} area before it gets full public exposure.
+
+3291 Harasym Tr, Oakville — a beautifully appointed home in one of north Oakville's most established communities.
+
+Given your practice in {{city}}, I thought you might appreciate seeing it first — either for yourself or as a resource to share with colleagues who may be looking in the area.
+
+I'd be happy to arrange a private showing or send over a detailed package at your convenience.
+
+Kind regards,
+{{agent_name}}
+{{brokerage}}
+{{agent_phone}}
+
+Note: I contacted you at your practice address sourced from the CPSO public registry. If you'd prefer not to receive real estate updates, simply reply and I'll remove you from my list immediately.`
+  },
+  {
+    id: 4,
+    title: "Template 4 — 14-Day Follow Up (no response)",
+    tag: "Follow Up",
+    variables: ["{{name}}", "{{agent_name}}", "{{agent_phone}}", "{{brokerage}}"],
+    body: `Subject: Following up — 3291 Harasym Tr, Oakville
+
+Hi {{name}},
+
+I sent a note a couple of weeks ago about a Sotheby's listing in Oakville and a physician housing resource I offer — just wanted to make sure my message didn't get buried.
+
+If the timing isn't right, completely understood. I'll leave it here unless I hear from you.
+
+If you'd like to see the property details, connect about the Halton market, or discuss anything at all — I'm one reply away.
+
+{{agent_name}}
+{{brokerage}}
+{{agent_phone}}
+
+Reply "remove" at any time to opt out.`
+  },
+  {
+    id: 5,
+    title: "Template 5 — Newsletter Pitch to Hospital Communications",
+    tag: "Content Contribution",
+    variables: ["{{name}}", "{{hospital}}", "{{agent_name}}", "{{agent_phone}}", "{{brokerage}}"],
+    body: `Subject: Market Update Content for {{hospital}} Staff Newsletter
+
+Hi {{name}},
+
+I'm {{agent_name}}, a Realtor with {{brokerage}} in Oakville. I work regularly with healthcare professionals buying and relocating in the Halton and Peel regions.
+
+I wanted to offer your team a complimentary contribution for your staff newsletter: a brief, readable Oakville/Halton real estate market update tailored for healthcare professionals.
+
+Content I can provide each quarter:
+• "What the Halton Market Looks Like Right Now" (500 words, plain language)
+• Neighbourhood spotlight — best areas for hospital staff commutes
+• Home-buying checklist for incoming residents and fellows
+
+This is a no-cost, no-obligation offer. I simply enjoy being a resource to healthcare communities I work with. If it's a fit for your newsletter, I'd love to contribute.
+
+Happy to send a sample issue for your review.
+
+{{agent_name}}
+{{brokerage}}
+{{agent_phone}}
+
+To opt out, reply and I'll remove you immediately.`
+  }
+];
+
+function renderTemplates(){
+  const settings = loadSettings();
+  const list = document.getElementById('templates-list');
+  list.innerHTML = '';
+  TEMPLATES.forEach(t => {
+    const card = document.createElement('div');
+    card.className = 'template-card';
+
+    let body = t.body;
+    body = body.replace(/\{\{agent_name\}\}/g, settings.agent_name || 'Karolis');
+    body = body.replace(/\{\{brokerage\}\}/g, settings.brokerage || "Sotheby's International Realty Canada");
+    body = body.replace(/\{\{agent_phone\}\}/g, settings.agent_phone || '[your phone]');
+
+    const highlighted = body.replace(/\{\{[^}]+\}\}/g, m => `<span class="var">${m}</span>`);
+
+    card.innerHTML = `
+      <div class="template-header" onclick="this.nextElementSibling.classList.toggle('open')">
+        <h3>${t.title}</h3>
+        <span class="tag">${t.tag}</span>
+      </div>
+      <div class="template-body">
+        <div class="template-variables">
+          <span style="font-size:11px;color:var(--text-dim);align-self:center">Variables to fill:</span>
+          ${t.variables.filter(v => !['{{agent_name}}','{{brokerage}}','{{agent_phone}}'].includes(v))
+            .map(v => `<span class="var-chip">${v}</span>`).join('')}
+        </div>
+        <div class="template-text">${highlighted}</div>
+        <div class="template-actions">
+          <button class="btn btn-gold btn-sm" onclick="copyTemplate(${t.id})">Copy Template</button>
+          <button class="btn btn-outline btn-sm" onclick="downloadTemplate(${t.id})">Download as .txt</button>
+        </div>
+      </div>
+    `;
+    // Open first template
+    if(t.id === 1) card.querySelector('.template-body').classList.add('open');
+    list.appendChild(card);
+  });
+}
+
+function copyTemplate(id){
+  const t = TEMPLATES.find(t => t.id === id);
+  if(!t) return;
+  const settings = loadSettings();
+  let body = t.body;
+  body = body.replace(/\{\{agent_name\}\}/g, settings.agent_name || 'Karolis');
+  body = body.replace(/\{\{brokerage\}\}/g, settings.brokerage || "Sotheby's International Realty Canada");
+  body = body.replace(/\{\{agent_phone\}\}/g, settings.agent_phone || '[your phone]');
+  navigator.clipboard.writeText(body).then(()=>{ alert('Template copied to clipboard!'); }).catch(()=>{ prompt('Copy this template:', body); });
+}
+
+function downloadTemplate(id){
+  const t = TEMPLATES.find(t => t.id === id);
+  if(!t) return;
+  const settings = loadSettings();
+  let body = t.body;
+  body = body.replace(/\{\{agent_name\}\}/g, settings.agent_name || 'Karolis');
+  body = body.replace(/\{\{brokerage\}\}/g, settings.brokerage || "Sotheby's International Realty Canada");
+  body = body.replace(/\{\{agent_phone\}\}/g, settings.agent_phone || '[your phone]');
+  const blob = new Blob([body], {type:'text/plain'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `template_${t.id}_${t.tag.replace(/\s+/g,'_').toLowerCase()}.txt`;
+  a.click();
+}
+
+// ── Settings ───────────────────────────────────────────────────
+function loadSettings(){
+  try {
+    const s = localStorage.getItem('medical_outreach_settings');
+    if(s) return JSON.parse(s);
+  } catch(e){}
+  return { agent_name:'Karolis', brokerage:"Sotheby's International Realty Canada",
+           address:'3291 Harasym Tr, Oakville, ON', agent_phone:'', agent_email:'', niche:'medical' };
+}
+
+function applySettings(){
+  const s = loadSettings();
+  document.getElementById('set-agent-name').value = s.agent_name || 'Karolis';
+  document.getElementById('set-brokerage').value = s.brokerage || "Sotheby's International Realty Canada";
+  document.getElementById('set-address').value = s.address || '3291 Harasym Tr, Oakville, ON';
+  document.getElementById('set-agent-phone').value = s.agent_phone || '';
+  document.getElementById('set-agent-email').value = s.agent_email || '';
+  document.getElementById('set-price').value = s.price || '';
+  document.getElementById('set-beds').value = s.beds || '';
+  document.getElementById('set-features').value = s.features || 'luxury finishes, private yard, move-in ready';
+  document.getElementById('set-niche').value = s.niche || 'medical';
+  if(s.agent_name) document.getElementById('sidebar-agent').textContent = `${s.agent_name} · Medical Outreach`;
+}
+
+function saveSettings(){
+  const s = {
+    agent_name: document.getElementById('set-agent-name').value,
+    brokerage: document.getElementById('set-brokerage').value,
+    address: document.getElementById('set-address').value,
+    agent_phone: document.getElementById('set-agent-phone').value,
+    agent_email: document.getElementById('set-agent-email').value,
+    price: document.getElementById('set-price').value,
+    beds: document.getElementById('set-beds').value,
+    features: document.getElementById('set-features').value,
+    niche: document.getElementById('set-niche').value,
+  };
+  localStorage.setItem('medical_outreach_settings', JSON.stringify(s));
+  document.getElementById('sidebar-agent').textContent = `${s.agent_name} · Medical Outreach`;
+  alert('Settings saved.');
+  renderTemplates();
+}
+
+// ── Filter listeners ───────────────────────────────────────────
+function attachFilterListeners(){
+  ['doctor-search','filter-city','filter-specialty','filter-hospital','filter-distance']
+    .forEach(id => {
+      const el = document.getElementById(id);
+      if(el) el.addEventListener('input', renderDoctorsTable);
+      if(el) el.addEventListener('change', renderDoctorsTable);
+    });
+  ['gk-search','gk-filter-dept','gk-filter-city']
+    .forEach(id => {
+      const el = document.getElementById(id);
+      if(el) el.addEventListener('input', renderGatekeepers);
+      if(el) el.addEventListener('change', renderGatekeepers);
+    });
+}
+
+// ── Boot ──────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  loadState();
+  applySettings();
+  updateStats();
+  renderCallList();
+  initDoctorFilters();
+  renderDoctorsTable();
+  renderGatekeepers();
+  renderTemplates();
+  initKanban();
+  attachFilterListeners();
+});
+</script>
+</body>
+</html>

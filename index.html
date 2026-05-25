@@ -6,8 +6,8 @@
 <title>Medical Professional Outreach — Sotheby's Oakville</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" integrity="sha512-Zcn6bjR/8RZbLEpLIeOwNtzREBAJnUKESxces60Mpoj+2okopSAcSUIUOseddDm0cxnGQzxIR7vJgsLZbdLE3w==" crossorigin="anonymous" referrerpolicy="no-referrer"/>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js" integrity="sha512-puJW3E/qXDqYp9IfhAI54BJEaWIfloJ7JWoFqBkwAzORmuolkHA7E4qNctxBKFwLMYE9LqY32hlyMFuZjHxCQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
   :root {
     --bg: #0a0a0a;
@@ -159,7 +159,7 @@
   .kanban-drop-zone.visible { display: block; }
 
   /* ─── Map ─── */
-  #map { height: 500px; border-radius: 4px; border: 1px solid var(--border); }
+  #map { height: 500px !important; width: 100% !important; border-radius: 4px; border: 1px solid var(--border); background: #1a1a1a; display: block; }
   .map-controls { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
   .map-legend { display: flex; gap: 20px; background: var(--bg2); border: 1px solid var(--border);
     padding: 12px 16px; border-radius: 4px; margin-top: 16px; flex-wrap: wrap; }
@@ -816,7 +816,7 @@ if (!window.GATEKEEPERS_DATA) {
 }
 
 // ─── Application ──────────────────────────────────────────────────────────
-const LISTING_COORDS = [43.4697, -79.7195];
+const LISTING_COORDS = [43.4675, -79.6441];
 const LISTING_ADDRESS = "3291 Harasym Tr, Oakville, ON";
 
 let outreachState = {};
@@ -867,7 +867,7 @@ function showPage(name){
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.getElementById('page-' + name).classList.add('active');
   document.getElementById('nav-' + name).classList.add('active');
-  if(name === 'map') requestAnimationFrame(() => initMap());
+  if(name === 'map') setTimeout(() => { initMap(); if(map) map.invalidateSize(); }, 300);
   if(name === 'tracker') renderKanban();
 }
 
@@ -1274,29 +1274,38 @@ const HOSPITAL_COORDS = [
 
 function initMap(){
   if(map) { map.invalidateSize(); filterMapDoctors(); return; }
-  map = L.map('map').setView(LISTING_COORDS, 11);
+
+  map = L.map('map', { zoomControl: true, scrollWheelZoom: true })
+         .setView(LISTING_COORDS, 11);
+
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-    maxZoom: 19
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    maxZoom: 19,
+    minZoom: 7,
+    crossOrigin: true
   }).addTo(map);
-  setTimeout(() => map.invalidateSize(), 150);
 
-  // Gold listing pin
+  // Force size recalculation twice — covers both layout-paint and any CSS transition delay
+  map.invalidateSize();
+  setTimeout(() => map.invalidateSize(), 200);
+  setTimeout(() => map.invalidateSize(), 600);
+
+  // Gold diamond marker — listing
   const goldIcon = L.divIcon({
-    html: `<div style="width:20px;height:20px;background:#C9A84C;border-radius:3px;border:2px solid #fff;transform:rotate(45deg);box-shadow:0 2px 6px rgba(0,0,0,0.5)"></div>`,
-    iconSize: [20,20], iconAnchor: [10,10], className: ''
+    html: '<div style="width:18px;height:18px;background:#C9A84C;border-radius:3px;border:2px solid #fff;transform:rotate(45deg);box-shadow:0 2px 8px rgba(0,0,0,0.6)"></div>',
+    iconSize: [18, 18], iconAnchor: [9, 9], className: ''
   });
-  L.marker(LISTING_COORDS, {icon: goldIcon}).addTo(map)
-    .bindPopup(`<strong style="color:#C9A84C">3291 Harasym Tr, Oakville</strong><br><em>Sotheby's International Realty</em><br>Listing address`);
+  L.marker(LISTING_COORDS, { icon: goldIcon }).addTo(map)
+   .bindPopup('<strong style="color:#C9A84C">3291 Harasym Tr, Oakville</strong><br><em>Sotheby\'s International Realty</em>');
 
-  // Hospital pins
+  // Blue circle markers — 13 hospitals
   const hospIcon = L.divIcon({
-    html: `<div style="width:12px;height:12px;background:#3498db;border-radius:50%;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,0.5)"></div>`,
-    iconSize: [12,12], iconAnchor: [6,6], className: ''
+    html: '<div style="width:13px;height:13px;background:#3498db;border-radius:50%;border:2px solid #fff;box-shadow:0 1px 5px rgba(0,0,0,0.5)"></div>',
+    iconSize: [13, 13], iconAnchor: [6, 6], className: ''
   });
   HOSPITAL_COORDS.forEach(h => {
-    L.marker([h.lat, h.lng], {icon: hospIcon}).addTo(map)
-      .bindPopup(`<strong>${h.name}</strong><br>${h.city}`);
+    L.marker([h.lat, h.lng], { icon: hospIcon }).addTo(map)
+     .bindPopup('<strong>' + h.name + '</strong><br>' + h.city);
   });
 
   filterMapDoctors();
